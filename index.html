@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Révisions Mathématiques</title>
+<style>
+:root{--bg:#f4f6fb;--card:#fff;--text:#111;--muted:#5b6472;--accent:#4a6cff;--accent2:#2bd4a9;--shadow:0 6px 18px rgba(0,0,0,.08)}
+*{box-sizing:border-box;font-family:Arial,system-ui,sans-serif}
+body{margin:0;background:var(--bg);color:var(--text);height:100vh;overflow:hidden}
+
+.container{max-width:980px;margin:auto;padding:28px 18px 90px;height:100vh;overflow:auto}
+header{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
+h1{margin:0;text-align:center;font-size:26px}
+.sub{margin:0;text-align:center;color:var(--muted);font-size:14px}
+.searchRow{display:flex;gap:10px;align-items:center;margin-top:6px}
+#search{flex:1;padding:12px 12px;border-radius:10px;border:1px solid #cfd6e3;background:#fff;font-size:15px;outline:none}
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;justify-content:center}
+.pill{padding:8px 10px;border-radius:999px;background:#e9eeff;color:#1c2b6b;font-size:13px;cursor:pointer;user-select:none}
+.pill.active{background:var(--accent);color:#fff}
+
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}
+@media(max-width:780px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border-radius:14px;padding:16px;box-shadow:var(--shadow);border:1px solid rgba(0,0,0,.05)}
+.card h3{margin:0 0 8px;font-size:17px}
+.meta{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.tag{font-size:12px;color:#fff;background:#1a2a5a;padding:4px 8px;border-radius:999px}
+.level{font-size:12px;color:#0d5a47;background:rgba(43,212,169,.18);border:1px solid rgba(43,212,169,.35);padding:4px 8px;border-radius:999px}
+.formula{font-family:ui-monospace,Menlo,Consolas,monospace;background:#eef2ff;border:1px solid #dbe3ff;padding:10px;border-radius:10px;margin:10px 0;white-space:pre-wrap;word-break:break-word}
+.desc{margin:0;color:var(--muted);font-size:14px;line-height:1.4}
+.actions{display:flex;gap:10px;margin-top:12px}
+.btn{border:none;border-radius:10px;padding:9px 12px;font-size:14px;cursor:pointer}
+.btnPrimary{background:var(--accent);color:#fff}
+.btnGhost{background:#f0f2f8;color:#1f2a44}
+.btn:hover{opacity:.92}
+.quiz{margin-top:12px;border-top:1px solid #e4e8f2;padding-top:12px}
+.q{margin:0 0 10px;font-size:14px}
+.opt{display:block;padding:10px;border-radius:10px;background:#f3f5fb;border:1px solid #e6ebf6;margin:7px 0;cursor:pointer;font-size:14px}
+.opt.good{background:#b9fbc0;border-color:#77d585}
+.opt.bad{background:#ffadad;border-color:#f27878}
+.footerNote{margin-top:16px;color:var(--muted);font-size:13px;text-align:center}
+
+.overlay{position:fixed;inset:0;background:#0c1228;color:#e9edf7;display:flex;flex-direction:column;padding:14px;gap:10px}
+.topbar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}
+.topbar b{font-size:15px;justify-self:center}
+.topbar .spacer{justify-self:start}
+.topbar button{justify-self:end;border:none;border-radius:10px;padding:9px 12px;background:#1a2a5a;color:#fff;cursor:pointer}
+
+.online{font-size:13px;opacity:.85;text-align:center;margin-top:-4px}
+.chatBox{flex:1;overflow:auto;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px}
+.msg{max-width:78%;padding:10px 12px;border-radius:12px;margin:8px 0;font-size:14px;white-space:pre-wrap;word-break:break-word}
+.me{margin-left:auto;background:rgba(122,162,255,.22);border:1px solid rgba(122,162,255,.25)}
+.them{margin-right:auto;background:rgba(141,240,198,.16);border:1px solid rgba(141,240,198,.22)}
+.meta2{opacity:.75;font-size:12px;margin-top:4px}
+.row{display:flex;gap:10px}
+#chatInput{flex:1;margin:0;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.06);color:#e9edf7;padding:12px;outline:none}
+#sendBtn{border:none;border-radius:10px;padding:12px 14px;background:var(--accent);color:#fff;cursor:pointer}
+.status{font-size:13px;opacity:.8;text-align:center}
+.hidden{display:none}
+</style>
+</head>
+<body>
+
+<div class="container" id="mainView">
+  <header>
+    <h1>Révisions — Mathématiques</h1>
+    <p class="sub">Formules essentielles, méthodes, et mini-quiz.</p>
+    <div class="searchRow">
+      <input id="search" placeholder="Rechercher une formule, un chapitre, une méthode..." autocomplete="off">
+    </div>
+    <div class="pills" id="pills"></div>
+  </header>
+
+  <div class="grid" id="cards"></div>
+  <div class="footerNote">Créer une salle : <b>!!nom</b> puis Entrée (mot de passe demandé). Rejoindre : taper <b>nom</b> puis Entrée.</div>
+</div>
+
+<div class="overlay hidden" id="chatView">
+  <div class="topbar">
+    <div class="spacer"></div>
+    <b id="roomLabel"></b>
+    <button id="backBtn">Retour</button>
+  </div>
+  <div class="online" id="onlineLine">En ligne : 0</div>
+  <div class="chatBox" id="chatBox"></div>
+  <div class="row">
+    <input id="chatInput" placeholder="Écrire..." autocomplete="off">
+    <button id="sendBtn">Envoyer</button>
+  </div>
+  <div class="status" id="chatStatus"></div>
+</div>
+
+<script>
+const API_BASE="http://84.46.254.164:3001";
+const USER="anonyme";
+
+const data=[
+{cat:"Fonctions",lvl:"Base",title:"Fonction affine",formula:"y = ax + b",desc:"a = coefficient directeur (pente), b = ordonnée à l’origine.",quiz:{q:"Dans y = 2x + 3, b vaut :",opts:["2","3","5"],a:1}},
+{cat:"Fonctions",lvl:"Essentiel",title:"Taux de variation",formula:"TV = (f(b) - f(a)) / (b - a)",desc:"Pente de la sécante entre a et b.",quiz:{q:"Le taux de variation correspond à :",opts:["Une aire","Une pente","Une ordonnée"],a:1}},
+{cat:"Équations",lvl:"Base",title:"Équation du 1er degré",formula:"ax + b = 0  ⇒  x = −b/a  (a ≠ 0)",desc:"Isoler x en passant b de l’autre côté puis en divisant par a.",quiz:{q:"Résoudre 4x − 12 = 0 :",opts:["x=3","x=−3","x=12"],a:0}},
+{cat:"Second degré",lvl:"Essentiel",title:"Discriminant",formula:"Δ = b² − 4ac",desc:"Δ>0: 2 solutions ; Δ=0: 1 solution ; Δ<0: aucune solution réelle.",quiz:{q:"Si Δ < 0 :",opts:["2 solutions","1 solution","0 solution réelle"],a:2}},
+{cat:"Second degré",lvl:"Essentiel",title:"Racines (si Δ ≥ 0)",formula:"x₁ = (−b − √Δ)/(2a)\nx₂ = (−b + √Δ)/(2a)",desc:"Formules de résolution pour ax²+bx+c=0.",quiz:{q:"Dans les formules, le dénominateur vaut :",opts:["a","2a","b"],a:1}},
+{cat:"Trigonométrie",lvl:"Essentiel",title:"Identité fondamentale",formula:"sin²(x) + cos²(x) = 1",desc:"Vraie pour tout x.",quiz:{q:"sin²(x)+cos²(x) vaut :",opts:["0","1","2"],a:1}},
+{cat:"Trigonométrie",lvl:"Essentiel",title:"Tangente",formula:"tan(x) = sin(x) / cos(x)",desc:"Définie si cos(x) ≠ 0.",quiz:{q:"tan(x) est le rapport :",opts:["cos/sin","sin/cos","sin+cos"],a:1}},
+{cat:"Géométrie",lvl:"Base",title:"Pythagore",formula:"Dans un triangle rectangle :  c² = a² + b²",desc:"c = hypoténuse.",quiz:{q:"Si a=3 et b=4, c vaut :",opts:["5","7","1"],a:0}},
+{cat:"Statistiques",lvl:"Essentiel",title:"Moyenne",formula:"m = (Σ valeurs) / n",desc:"Somme des valeurs divisée par l’effectif.",quiz:{q:"Moyenne de 2, 4, 6 :",opts:["3","4","5"],a:1}}
+];
+
+const cardsEl=document.getElementById("cards");
+const searchEl=document.getElementById("search");
+const pillsEl=document.getElementById("pills");
+
+const mainView=document.getElementById("mainView");
+const chatView=document.getElementById("chatView");
+const roomLabel=document.getElementById("roomLabel");
+const backBtn=document.getElementById("backBtn");
+const chatBox=document.getElementById("chatBox");
+const chatInput=document.getElementById("chatInput");
+const sendBtn=document.getElementById("sendBtn");
+const chatStatus=document.getElementById("chatStatus");
+const onlineLine=document.getElementById("onlineLine");
+
+let activeCat="Tous";
+let room=null;
+let lastId=0;
+let poll=null;
+let pingTimer=null;
+let onlinePoll=null;
+
+let clientId=localStorage.getItem("mathrev_cid");
+if(!clientId){
+  clientId="c_"+Math.random().toString(16).slice(2)+Date.now().toString(16);
+  localStorage.setItem("mathrev_cid",clientId);
+}
+
+function esc(s){
+  return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#39;");
+}
+
+function buildPills(){
+  const cats=["Tous",...Array.from(new Set(data.map(x=>x.cat)))];
+  pillsEl.innerHTML="";
+  cats.forEach(c=>{
+    const p=document.createElement("div");
+    p.className="pill"+(c===activeCat?" active":"");
+    p.textContent=c;
+    p.onclick=()=>{activeCat=c;buildPills();applyFilter();};
+    pillsEl.appendChild(p);
+  });
+}
+
+function cardHtml(item, idx){
+  const q=item.quiz;
+  return `
+  <div class="card">
+    <div class="meta">
+      <span class="tag">${esc(item.cat)}</span>
+      <span class="level">${esc(item.lvl)}</span>
+    </div>
+    <h3>${esc(item.title)}</h3>
+    <div class="formula">${esc(item.formula)}</div>
+    <p class="desc">${esc(item.desc)}</p>
+    <div class="actions">
+      <button class="btn btnPrimary" data-qopen="${idx}">Quiz</button>
+      <button class="btn btnGhost" data-copy="${idx}">Copier formule</button>
+    </div>
+    <div class="quiz hidden" id="quiz-${idx}">
+      <p class="q">${esc(q.q)}</p>
+      ${q.opts.map((o,i)=>`<div class="opt" data-q="${idx}" data-o="${i}">${esc(o)}</div>`).join("")}
+    </div>
+  </div>`;
+}
+
+function render(list){
+  cardsEl.innerHTML=list.map((it)=>cardHtml(it, data.indexOf(it))).join("");
+}
+
+function applyFilter(){
+  const v=searchEl.value.trim().toLowerCase();
+  let list=data.slice();
+  if(activeCat!=="Tous") list=list.filter(x=>x.cat===activeCat);
+  if(v) list=list.filter(x=>[x.title,x.formula,x.desc,x.cat].some(s=>String(s).toLowerCase().includes(v)));
+  render(list);
+}
+
+async function roomExists(name){
+  try{
+    const r=await fetch(`${API_BASE}/api/chat/exists?room=${encodeURIComponent(name)}`);
+    if(!r.ok) return false;
+    const j=await r.json();
+    return !!j.exists;
+  }catch{
+    return false;
+  }
+}
+
+async function createRoom(name){
+  const pwd=prompt("Mot de passe");
+  if(pwd!=="nayzox") return false;
+  try{
+    const r=await fetch(`${API_BASE}/api/chat/create`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({room:name,password:pwd})
+    });
+    return r.ok;
+  }catch{
+    return false;
+  }
+}
+
+function openChat(name){
+  room=name;
+  roomLabel.textContent=name;
+  mainView.classList.add("hidden");
+  chatView.classList.remove("hidden");
+  chatBox.innerHTML="";
+  lastId=0;
+  chatInput.value="";
+  chatInput.focus();
+  chatStatus.textContent="";
+  onlineLine.textContent="En ligne : 0";
+  startPoll();
+  startPresence();
+  startOnlinePoll();
+}
+
+function closeChat(){
+  stopPoll();
+  stopPresence();
+  stopOnlinePoll();
+  chatView.classList.add("hidden");
+  mainView.classList.remove("hidden");
+  searchEl.focus();
+}
+
+function addMsg(m){
+  const w=document.createElement("div");
+  w.className="msg "+(m.from===USER?"me":"them");
+  const t=new Date(m.ts||Date.now());
+  w.innerHTML=`${esc(m.text)}<div class="meta2">${esc(m.from)} • ${t.toLocaleString()}</div>`;
+  chatBox.appendChild(w);
+  chatBox.scrollTop=chatBox.scrollHeight;
+  if(m.id>lastId) lastId=m.id;
+}
+
+async function fetchMessages(){
+  try{
+    const r=await fetch(`${API_BASE}/api/chat/messages?room=${encodeURIComponent(room)}&after=${lastId}`);
+    if(!r.ok) return;
+    const j=await r.json();
+    if(!j.ok || !Array.isArray(j.messages)) return;
+    j.messages.forEach(addMsg);
+    chatStatus.textContent="";
+  }catch{
+    chatStatus.textContent="";
+  }
+}
+
+async function sendMessage(){
+  const text=chatInput.value.trim();
+  if(!text) return;
+  chatInput.value="";
+  try{
+    const r=await fetch(`${API_BASE}/api/chat/send`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({room,text})
+    });
+    if(r.ok) fetchMessages();
+  }catch{}
+}
+
+function startPoll(){
+  if(poll) return;
+  fetchMessages();
+  poll=setInterval(fetchMessages,1200);
+}
+
+function stopPoll(){
+  if(poll){clearInterval(poll);poll=null;}
+}
+
+async function ping(){
+  try{
+    await fetch(`${API_BASE}/api/chat/ping`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({room,client:clientId})
+    });
+  }catch{}
+}
+
+function startPresence(){
+  if(pingTimer) return;
+  ping();
+  pingTimer=setInterval(ping,10000);
+}
+
+function stopPresence(){
+  if(pingTimer){clearInterval(pingTimer);pingTimer=null;}
+}
+
+async function updateOnline(){
+  try{
+    const r=await fetch(`${API_BASE}/api/chat/online?room=${encodeURIComponent(room)}`);
+    if(!r.ok) return;
+    const j=await r.json();
+    if(j && j.ok) onlineLine.textContent="En ligne : "+String(j.count||0);
+  }catch{}
+}
+
+function startOnlinePoll(){
+  if(onlinePoll) return;
+  updateOnline();
+  onlinePoll=setInterval(updateOnline,5000);
+}
+
+function stopOnlinePoll(){
+  if(onlinePoll){clearInterval(onlinePoll);onlinePoll=null;}
+}
+
+searchEl.addEventListener("keydown", async (e)=>{
+  if(e.key!=="Enter") return;
+  const raw=searchEl.value.trim();
+  if(!raw){applyFilter();return;}
+
+  if(raw.startsWith("!!")){
+    const name=raw.slice(2).trim().toLowerCase();
+    if(!name) return;
+    const ok=await createRoom(name);
+    if(ok) openChat(name);
+    return;
+  }
+
+  const name=raw.toLowerCase();
+  const exists=await roomExists(name);
+  if(exists){openChat(name);return;}
+  applyFilter();
+});
+
+document.addEventListener("click",(e)=>{
+  const qbtn=e.target.closest("[data-qopen]");
+  if(qbtn){
+    const idx=Number(qbtn.getAttribute("data-qopen"));
+    const q=document.getElementById("quiz-"+idx);
+    if(q) q.classList.toggle("hidden");
+    return;
+  }
+  const cbtn=e.target.closest("[data-copy]");
+  if(cbtn){
+    const idx=Number(cbtn.getAttribute("data-copy"));
+    const f=data[idx]?.formula||"";
+    navigator.clipboard?.writeText(String(f));
+    return;
+  }
+  const opt=e.target.closest(".opt");
+  if(opt){
+    const qi=Number(opt.getAttribute("data-q"));
+    const oi=Number(opt.getAttribute("data-o"));
+    const ans=data[qi].quiz.a;
+    if(oi===ans) opt.classList.add("good"); else opt.classList.add("bad");
+  }
+});
+
+sendBtn.addEventListener("click", sendMessage);
+chatInput.addEventListener("keydown",(e)=>{ if(e.key==="Enter") sendMessage(); });
+backBtn.addEventListener("click", closeChat);
+
+buildPills();
+applyFilter();
+</script>
+</body>
+</html>
