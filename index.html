@@ -295,7 +295,7 @@ async function ping(){
 function startPresence(){
   if(pingTimer) return;
   ping();
-  pingTimer=setInterval(ping,10000);
+  pingTimer=setInterval(ping,1000);
 }
 
 function stopPresence(){
