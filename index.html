@@ -295,7 +295,7 @@ async function ping(){
 function startPresence(){
   if(pingTimer) return;
   ping();
-  pingTimer=setInterval(ping,1000);
+  pingTimer=setInterval(ping,100);
 }
 
 function stopPresence(){
@@ -314,7 +314,7 @@ async function updateOnline(){
 function startOnlinePoll(){
   if(onlinePoll) return;
   updateOnline();
-  onlinePoll=setInterval(updateOnline,5000);
+  onlinePoll=setInterval(updateOnline,100);
 }
 
 function stopOnlinePoll(){
