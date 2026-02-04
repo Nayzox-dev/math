@@ -91,8 +91,9 @@ h1{margin:0;text-align:center;font-size:26px}
 </div>
 
 <script>
-const API_BASE="https://surprising-predicted-males-version.trycloudflare.com";
-const USER="anonyme";
+const API_BASE="https://threshold-concerns-rated-unable.trycloudflare.com";
+const USER_ID = localStorage.getItem("chat_uid") || crypto.randomUUID();
+localStorage.setItem("chat_uid", USER_ID);
 
 const data=[
 {cat:"Fonctions",lvl:"Base",title:"Fonction affine",formula:"y = ax + b",desc:"a = coefficient directeur (pente), b = ordonnée à l’origine.",quiz:{q:"Dans y = 2x + 3, b vaut :",opts:["2","3","5"],a:1}},
@@ -236,9 +237,9 @@ function closeChat(){
 
 function addMsg(m){
   const w=document.createElement("div");
-  w.className="msg "+(m.from===USER?"me":"them");
+  w.className="msg "+(m.uid===USER_ID?"me":"them");
   const t=new Date(m.ts||Date.now());
-  w.innerHTML=`${esc(m.text)}<div class="meta2">${esc(m.from)} • ${t.toLocaleString()}</div>`;
+  w.innerHTML=`${esc(m.text)}<div class="meta2">anonyme • ${t.toLocaleString()}</div>`;
   chatBox.appendChild(w);
   chatBox.scrollTop=chatBox.scrollHeight;
   if(m.id>lastId) lastId=m.id;
@@ -265,7 +266,7 @@ async function sendMessage(){
     const r=await fetch(`${API_BASE}/api/chat/send`,{
       method:"POST",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({room,text})
+      body: JSON.stringify({room,text,uid:USER_ID})
     });
     if(r.ok) fetchMessages();
   }catch{}
@@ -372,6 +373,3 @@ applyFilter();
 </script>
 </body>
 </html>
-
-
-
